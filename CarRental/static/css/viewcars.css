@@ -38,38 +38,14 @@
 
 
 
-  body {
-    background-color: #f8f9fa;
+body {
+    background-color: #f8f9fa; /* Light background for contrast */
 }
 
-.card {
-    transition: transform 0.2s;
-}
-
-.card:hover {
-    transform: scale(1.05);
-}
-
-.card-img-top {
-    border-top-left-radius: 0.5rem;
-    border-top-right-radius: 0.5rem;
-}
-
-.card-title {
-    font-weight: bold;
-    color: #343a40;
-}
-
-.card-text {
-    color: #6c757d;
-}
-
-.btn-primary {
-    background-color: #007bff;
-    border-color: #007bff;
-}
-
-.btn-primary:hover {
-    background-color: #0056b3;
-    border-color: #0056b3;
+.custom-card {
+    border: none; /* Remove default border */
+    border-radius: 15px; /* Rounded corners */
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+    transition: transform 0.3s;
+    width: 100%;
 }

@@ -18,8 +18,6 @@ class Cars(models.Model):
     description = models.TextField()
     is_available = models.BooleanField(default=True)
     image = models.FileField()
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
 class Rental(models.Model):
     STATUS_CHOICES = [
         ('pending', 'Pending'),

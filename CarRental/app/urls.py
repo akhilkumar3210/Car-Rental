@@ -6,8 +6,11 @@ urlpatterns=[
      path('logout',views.car_logout),
      path('shop_home',views.shop_home),
      path('addcars',views.addcars),
+     path('makes',views.makess),
+
 
      path('user_home',views.user_home),
+     path('viewcars/<cid>',views.view_cars),
 
 
 

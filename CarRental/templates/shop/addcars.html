@@ -28,7 +28,7 @@
                         <a class="nav-link" href="#">Add Cars</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="#">Services</a>
+                        <a class="nav-link" href="makes">Makes</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="logout">Logout</a>
@@ -38,17 +38,20 @@
         </div>
     </nav>
 
-    <div>
-        <form method="POST" action="">
+    <div class="mt-5">
+        <form method="POST" action="" enctype="multipart/form-data">
             {% csrf_token %}
 
             <label for="id">Car ID:</label>
-            <input type="text" name="cid"  required>
+            <input type="text" name="cid" required>
 
             <label for="make">Make:</label>
-            <select name="make" id="make">
-                <!-- Options for Makes will be populated here -->
+            <select id="" name="p_makes">
+                {% for i in data %}
+                <option value="{{i.makes}}">{{i.makes}}</option>
+                {% endfor %}
             </select>
+
 
             <label for="model">Model:</label>
             <input type="text" name="model" id="model" required>
