@@ -110,7 +110,7 @@
                     <img src="{{data.image.url}}" class="card-img-top" alt="Card image">
                     <div class="card-body">
                         <h5 class="card-title">{{data.model}}</h5>
-                        <h6 class="card-subtitle mb-2 text-muted">{{data.make}} | {{data.year}}</h6>
+                        <h6 class="card-subtitle mb-2 text-muted">{{data.make.makes}} | {{data.year}}</h6>
                         <p class="card-text"><strong>Color:</strong> {{data.color}}</p>
                         <p class="card-text"><strong>License Plate:</strong> {{data.license_plate}}</p>
                         <p class="card-text"><strong>Mileage:</strong> {{data.mileage}} km/l</p>
@@ -130,7 +130,7 @@
                             <div>
                                 <strong>Total: </strong> ₹<span id="totalPrice">{{ total_price }}</span>
                             </div>
-                            <button type="submit" class="btn btn-primary">Rent</button>
+                            <button type="submit" class="btn btn-primary ">Book Now</button>
                         </form>
 
                     </div>

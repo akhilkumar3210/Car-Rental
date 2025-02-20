@@ -35,7 +35,7 @@
     </div>
 </nav>
 
-<div class="container mt-5">
+<div class="container mt-5 mb-4">
     <div class="row">
         {% for i in data %}
         <div class="col-md-4">
@@ -43,7 +43,7 @@
                 <img src="{{i.image.url}}" class="card-img-top" alt="Card image">
                 <div class="card-body">
                     <h5 class="card-title">{{i.model}}</h5>
-                    <h5 class="card-title">{{i.make}}</h5>
+                    <h5 class="card-title">{{i.make.makes}}</h5>
                     <h5 class="card-title">{{i.year}}</h5>
                     <h5 class="card-title">{{i.color}}</h5>
                     <h5 class="card-title">{{i.license_plate}}</h5>
