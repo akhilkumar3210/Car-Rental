@@ -1,6 +1,7 @@
 from django.shortcuts import render,redirect
 from django.contrib.auth import authenticate,login,logout
 from django.db import IntegrityError
+from django.core.exceptions import ValidationError
 from django.contrib import messages
 from datetime import datetime
 from django.utils import timezone
@@ -82,52 +83,48 @@ def shop_home(req):
 #                 return redirect(car_login)
 
 def addcars(req):
-    if 'shop' in req.session:
-        if req.method == 'POST':
-            cid = req.POST['cid']
-            model = req.POST['model']
-            make = req.POST['p_makes']
-            year = req.POST['year']
-            color = req.POST['color']
-            license_plate = req.POST['license_plate']
-            mileage = req.POST['mileage']
-            price_per_day = req.POST['price_per_day']
-            description = req.POST['description']
-            is_available = req.POST['is_available'] == 'on'
-            image = req.FILES['image']
+    if req.method == 'POST':
+        car_id = req.POST.get('cid')
+        make = req.POST.get('p_makes')
+        model = req.POST.get('model')
+        year = req.POST.get('year')
+        body_type = req.POST.get('body_type')
+        fuel = req.POST.get('fuel')
+        transmission = req.POST.get('transmission')
+        mileage = req.POST.get('mileage')
+        price_per_day = req.POST.get('price_per_day')
+        description = req.POST.get('description')
+        image = req.FILES.get('image')
 
-            if Cars.objects.filter(license_plate=license_plate).exists():
-                messages.error(req, "This license plate already exists.")
-                data = Makes.objects.all()
-                return render(req, 'shop/addcars.html', {'data': data})
+        try:
+            if not car_id or not model or not year or not mileage or not price_per_day or not image:
+                raise ValidationError("All required fields must be filled.")
+            
+            if float(price_per_day) <= 0:
+                raise ValidationError("Price per day must be greater than 0.")
+            
+            Cars.objects.create(
+               cid=car_id,
+                make=Makes.objects.get(makes=make),
+                model=model,
+                year=year,
+                bodytype=body_type,
+                fuel=fuel,
+                transmission=transmission,
+                mileage=mileage,
+                price_per_day=price_per_day,
+                description=description,
+                image=image
+            )
+            return redirect(user_home)
 
-            try:
-                data = Cars.objects.create(
-                    cid=cid,
-                    model=model,
-                    make=Makes.objects.get(makes=make),
-                    year=year,
-                    color=color,
-                    license_plate=license_plate,
-                    mileage=mileage,
-                    price_per_day=price_per_day,
-                    description=description,
-                    is_available=is_available,
-                    image=image
-                )
-                data.save()
-                messages.success(req, "Car added successfully!")
-                return redirect(shop_home)
-            except IntegrityError:
-                messages.error(req, "An error occurred while adding the car. Please try again.")
-                data = Makes.objects.all()
-                return render(req, 'shop/addcars.html', {'data': data})
+        except ValidationError as e:
+            error_message = e.message
+            return render(req, 'shop/addcars.html', {'error_message': error_message, 'data': data})
 
-        else:
-            data = Makes.objects.all()
-            return render(req, 'shop/addcars.html', {'data': data})
     else:
-        return redirect(car_login)
+        data = Makes.objects.all()
+        return render(req, 'shop/addcars.html', {'data': data})
 
 def makess(req):
         if 'shop' in req.session:
@@ -145,6 +142,9 @@ def makess(req):
 def user_home(req):
         data=Cars.objects.all() 
         return render(req,'user/user.html',{'data':data})
+def available_car(req):
+        data=Cars.objects.all() 
+        return render(req,'user/available-cars.html',{'data':data})
 
 
 # def view_cars(req,cid):
@@ -162,7 +162,7 @@ def view_cars(req, cid):
         start_date_str = ''
         end_date_str = ''
         
-        # Check if the request method is POST to handle form submission
+        # Check if the req method is POST to handle form submission
         if req.method == 'POST':
             start_date_str = req.POST.get('startDate')
             end_date_str = req.POST.get('endDate')

@@ -3,6 +3,6 @@ from . models import *
 
 # Register your models here.
 admin.site.register(Makes)
-admin.site.register(Cars)
+# admin.site.register(Cars)
 
 

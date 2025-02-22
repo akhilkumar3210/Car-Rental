@@ -6,18 +6,35 @@ from django.contrib.auth.models import User
 class Makes(models.Model):
     makes=models.TextField()
 
+class Booking(models.Model):
+    # Pickup details
+    pickup_location = models.CharField(max_length=255)
+    pickup_date = models.DateField()
+    pickup_time = models.TimeField()
+
+    # Dropoff details
+    dropoff_location = models.CharField(max_length=255)
+    dropoff_date = models.DateField()
+    dropoff_time = models.TimeField()
+
+    # To store any additional info or status, if needed
+    status = models.CharField(max_length=100, default='Pending')
+
 class Cars(models.Model):
+    booking = models.ForeignKey(Booking, on_delete=models.CASCADE, null=True, blank=True)
     cid=models.TextField()
     make = models.ForeignKey(Makes,on_delete=models.CASCADE)
     model = models.TextField()
     year = models.IntegerField()
-    color = models.TextField()
-    license_plate = models.CharField(max_length=20, unique=True)
+    bodytype=models.TextField()
+    fuel=models.TextField(null=True,blank=True)
+    transmission=models.TextField()
     mileage = models.IntegerField()
     price_per_day = models.DecimalField(max_digits=10, decimal_places=2)
     description = models.TextField()
-    is_available = models.BooleanField(default=True)
     image = models.FileField()
+
+
 class Rental(models.Model):
     STATUS_CHOICES = [
         ('pending', 'Pending'),
