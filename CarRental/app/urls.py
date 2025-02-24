@@ -10,8 +10,9 @@ urlpatterns=[
 
 
      path('user_home',views.user_home),
-     path('available_car',views.available_car),
-     path('viewcars/<cid>',views.view_cars),
+     # path('available_car',views.available_car),
+     path('available-cars/<booking_id>',views.available_car, name='available_car'),
+ 
 
 
 

@@ -1,4 +1,4 @@
-from django.shortcuts import render,redirect
+from django.shortcuts import render,redirect,get_object_or_404
 from django.contrib.auth import authenticate,login,logout
 from django.db import IntegrityError
 from django.core.exceptions import ValidationError
@@ -116,7 +116,7 @@ def addcars(req):
                 description=description,
                 image=image
             )
-            return redirect(user_home)
+            return redirect(shop_home)
 
         except ValidationError as e:
             error_message = e.message
@@ -140,11 +140,127 @@ def makess(req):
                 return redirect(car_login)
 # ___________________________________________________________________________ADMIN_________________________________________________________________________________________
 def user_home(req):
-        data=Cars.objects.all() 
-        return render(req,'user/user.html',{'data':data})
-def available_car(req):
-        data=Cars.objects.all() 
-        return render(req,'user/available-cars.html',{'data':data})
+    # if req.method == 'POST':
+    #     # Access form data directly from req.POST
+    #     pickup_location = req.POST.get('pickup-location')
+    #     pickup_date = req.POST.get('pickup-date')
+    #     pickup_hour = req.POST.get('pickup-hour')
+    #     pickup_minute = req.POST.get('pickup-minute')
+    #     pickup_ampm = req.POST.get('pickup-ampm')
+        
+    #     dropoff_location = req.POST.get('dropoff-location')
+    #     dropoff_date = req.POST.get('dropoff-date')
+    #     dropoff_hour = req.POST.get('dropoff-hour')
+    #     dropoff_minute = req.POST.get('dropoff-minute')
+    #     dropoff_ampm = req.POST.get('dropoff-ampm')
+
+    #     # Combine the hour, minute, and AM/PM into a full time string (24-hour format)
+    #     pickup_time_str = f"{pickup_hour}:{pickup_minute} {pickup_ampm}"
+    #     dropoff_time_str = f"{dropoff_hour}:{dropoff_minute} {dropoff_ampm}"
+
+    #     # Convert time to 24-hour format for storing in the database
+    #     pickup_time = datetime.strptime(pickup_time_str, "%I:%M %p").time()
+    #     dropoff_time = datetime.strptime(dropoff_time_str, "%I:%M %p").time()
+
+    #     # Save the booking to the database
+    #     booking = Booking(
+    #         pickup_location=pickup_location,
+    #         pickup_date=pickup_date,
+    #         pickup_time=pickup_time,
+    #         dropoff_location=dropoff_location,
+    #         dropoff_date=dropoff_date,
+    #         dropoff_time=dropoff_time
+    #     )
+    #     booking.save()
+    #     return redirect(available_car)
+
+    # return render(req, 'user/user.html')
+    if req.method == 'POST':
+        # Access form data directly from req.POST
+        pickup_location = req.POST.get('pickup-location')
+        pickup_date = req.POST.get('pickup-date')
+        pickup_hour = req.POST.get('pickup-hour')
+        pickup_minute = req.POST.get('pickup-minute')
+        pickup_ampm = req.POST.get('pickup-ampm')
+        
+        dropoff_location = req.POST.get('dropoff-location')
+        dropoff_date = req.POST.get('dropoff-date')
+        dropoff_hour = req.POST.get('dropoff-hour')
+        dropoff_minute = req.POST.get('dropoff-minute')
+        dropoff_ampm = req.POST.get('dropoff-ampm')
+
+        # Combine the hour, minute, and AM/PM into a full time string (24-hour format)
+        pickup_time_str = f"{pickup_hour}:{pickup_minute} {pickup_ampm}"
+        dropoff_time_str = f"{dropoff_hour}:{dropoff_minute} {dropoff_ampm}"
+
+        # Convert time to 24-hour format for storing in the database
+        pickup_time = datetime.strptime(pickup_time_str, "%I:%M %p").time()
+        dropoff_time = datetime.strptime(dropoff_time_str, "%I:%M %p").time()
+
+        # Convert dates from string to date objects
+        pickup_date = datetime.strptime(pickup_date, "%Y-%m-%d").date()
+        dropoff_date = datetime.strptime(dropoff_date, "%Y-%m-%d").date()
+
+        # Save the booking to the database
+        booking = Booking(
+            pickup_location=pickup_location,
+            pickup_date=pickup_date,
+            pickup_time=pickup_time,
+            dropoff_location=dropoff_location,
+            dropoff_date=dropoff_date,
+            dropoff_time=dropoff_time,
+            user=req.user  # Assuming the user is logged in
+        )
+        
+        try:
+            booking.save()
+            return redirect('available_car', booking_id=booking.id)  # Redirect to available_car with booking ID
+        except Exception as e:
+            # Handle the error (e.g., log it, show a message, etc.)
+            print(f"Error saving booking: {e}")
+            # Optionally, you can redirect to an error page or show a message
+
+    return render(req, 'user/user.html')
+ 
+def available_car(req, booking_id):
+    # Retrieve the booking using the provided booking_id
+    booking = get_object_or_404(Booking, pk=booking_id)
+
+    # Get the pickup and dropoff dates and times from the booking
+    pickupdate = booking.pickup_date
+    dropoff_date = booking.dropoff_date
+    pickup_time = booking.pickup_time
+    dropoff_time = booking.dropoff_time
+
+    # Calculate the difference between pickup and dropoff dates
+    delta_days = (dropoff_date - pickupdate).days  # Get the number of full days
+
+    # Calculate total hours and minutes
+    pickup_datetime = datetime.combine(pickupdate, pickup_time)
+    dropoff_datetime = datetime.combine(dropoff_date, dropoff_time)
+    total_duration = dropoff_datetime - pickup_datetime
+
+    total_hours = total_duration.seconds // 3600  # Total hours
+    total_minutes = (total_duration.seconds // 60) % 60  # Remaining minutes
+
+    # Fetch available cars
+    available_cars = Cars.objects.all()  # Modify this to filter based on your criteria
+
+    # Calculate total cost for each car based on the number of days and price per day
+    total_costs = []
+    for car in available_cars:
+        total_cost = (car.price_per_day * delta_days) + (car.price_per_day / 24 * total_hours) + (car.price_per_day / 1440 * total_minutes)
+        total_costs.append({
+            'car': car,
+            'total_cost': total_cost
+        })
+
+    return render(req, 'user/available-cars.html', {
+        'data': total_costs,
+        'total_days': delta_days,
+        'total_hours': total_hours,
+        'total_minutes': total_minutes
+    })
 
 
 # def view_cars(req,cid):
@@ -154,40 +270,4 @@ def available_car(req):
 #     else:
 #          return redirect(car_login)
 
-def view_cars(req, cid):
-    if 'user' in req.session:
-        data = Cars.objects.get(pk=cid)
-        
-        total_price = 0
-        start_date_str = ''
-        end_date_str = ''
-        
-        # Check if the req method is POST to handle form submission
-        if req.method == 'POST':
-            start_date_str = req.POST.get('startDate')
-            end_date_str = req.POST.get('endDate')
-            
-            # Convert string dates to datetime objects
-            try:
-                start_date = datetime.strptime(start_date_str, '%m/%d/%Y')
-                end_date = datetime.strptime(end_date_str, '%m/%d/%Y')
-                
-                # Calculate the number of days
-                delta = (end_date - start_date).days
-                
-                # Calculate total price
-                if delta > 0:  # Ensure that the end date is after the start date
-                    total_price = delta * data.price_per_day
-                else:
-                    total_price = 0  # Handle case where dates are invalid
-            except ValueError:
-                total_price = 0  # Handle case where date conversion fails
 
-        return render(req, 'user/viewcars.html', {
-            'data': data,
-            'total_price': total_price,
-            'start_date': start_date_str,
-            'end_date': end_date_str
-        })
-    else:
-        return redirect('car_login')  # Ensure you have the correct URL name for redirection

@@ -20,6 +20,13 @@ class Booking(models.Model):
     # To store any additional info or status, if needed
     status = models.CharField(max_length=100, default='Pending')
 
+    # Optional: Additional fields for tracking (e.g., User, or booking creation date)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Booking from {self.pickup_location} to {self.dropoff_location} on {self.pickup_date}"
+
 class Cars(models.Model):
     booking = models.ForeignKey(Booking, on_delete=models.CASCADE, null=True, blank=True)
     cid=models.TextField()
@@ -27,10 +34,10 @@ class Cars(models.Model):
     model = models.TextField()
     year = models.IntegerField()
     bodytype=models.TextField()
-    fuel=models.TextField(null=True,blank=True)
+    fuel=models.TextField()
     transmission=models.TextField()
     mileage = models.IntegerField()
-    price_per_day = models.DecimalField(max_digits=10, decimal_places=2)
+    price_per_day = models.FloatField()
     description = models.TextField()
     image = models.FileField()
 

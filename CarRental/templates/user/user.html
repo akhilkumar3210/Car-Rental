@@ -61,25 +61,7 @@
             {% endfor %}
         </div>
     </div> -->
-    <!-- <div class="search-container">
-        <h2>Search for Cheap Rental Cars in Kerala</h2>
-        <form>
-            <label for="pickup-location">Picking Up Location</label>
-            <input type="text" id="pickup-location" placeholder="Airport or Anywhere">
-           
-            <label for="dropoff-location">Dropping Off Location</label>
-            <input type="text" id="dropoff-location" placeholder="Airport or Anywhere">
-
-            <label for="pickup-date">Picking Up Date</label>
-            <input type="date" id="pickup-date">
-
-            <label for="dropoff-date">Dropping Off Date</label>
-            <input type="date" id="dropoff-date">
-
-            <button type="submit">Find Car</button>
-        </form>
-    </div> -->
-    <div class="loc">
+    <!-- <div class="loc">
         <div class="containerrr">
             <label class="toggle">
                 <span class="slider"></span>
@@ -148,6 +130,74 @@
                 }
             }
         </script>
+
+
+
+ -->
+ <div class="loc">
+    <div class="containerrr">
+        <form method="POST">
+            {% csrf_token %}
+            <label class="toggle">
+                <span class="slider"></span>
+            </label>
+
+            <div class="booking-section">
+                <div class="option">
+                    <label for="pickup">Pick - Up</label>
+                    <div class="details">
+                        <label>Locations</label>
+                        <select id="pickup-location" name="pickup-location">
+                            <option>Select your location in Ernakulam</option>
+                            <option>HMT Kalamassery</option>
+                            <option>Edapally</option>
+                            <option>High Court</option>
+                        </select>
+                        <label>Date</label>
+                        <input type="date" id="pickup-date" name="pickup-date">
+                        <label>Time</label>
+                        <div class="time-container">
+                            <input type="number" id="pickup-hour" name="pickup-hour" min="1" max="12" placeholder="Hour" required>
+                            <input type="number" id="pickup-minute" name="pickup-minute" min="0" max="59" placeholder="Minute" required>
+                            <select id="pickup-ampm" name="pickup-ampm" required>
+                                <option value="AM">AM</option>
+                                <option value="PM">PM</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="switch-icon">⇄</div>
+
+                <div class="option">
+                    <label for="dropoff">Drop - Off</label>
+                    <div class="details">
+                        <label>Locations</label>
+                        <select id="dropoff-location" name="dropoff-location">
+                            <option>Select your location in Ernakulam</option>
+                            <option>HMT Kalamassery</option>
+                            <option>Edapally</option>
+                            <option>High Court</option>
+                        </select>
+                        <label>Date</label>
+                        <input type="date" id="dropoff-date" name="dropoff-date">
+                        <label>Time</label>
+                        <div class="time-container">
+                            <input type="number" id="dropoff-hour" name="dropoff-hour" min="1" max="12" placeholder="Hour" required>
+                            <input type="number" id="dropoff-minute" name="dropoff-minute" min="0" max="59" placeholder="Minute" required>
+                            <select id="dropoff-ampm" name="dropoff-ampm" required>
+                                <option value="AM">AM</option>
+                                <option value="PM">PM</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <button type="submit" class="btn">Let's Drive</button>
+        </form>
+    </div>
+</div>
 
 
 
