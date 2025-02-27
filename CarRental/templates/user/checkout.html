@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% load static %}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkout</title>
+    <link rel="stylesheet" href="{% static 'css/checkout.css' %}"> 
+</head>
+<body>
+    <h1>Checkout</h1>
+
+    <form method="POST" action="">
+        {% csrf_token %}
+        
+        <h2>Car Details</h2>
+        <div>
+            <h3>{{ car.model }} ({{ car.year }})</h3>
+            <p><strong>Make:</strong> {{ car.make.makes }}</p>
+            <p><strong>Transmission:</strong> {{ car.transmission }}</p>
+            <p><strong>Mileage:</strong> {{ car.mileage }} km</p>
+            <p><strong>Price per Day:</strong> ₹{{ car.price_per_day }}</p>
+            <img src="{{ car.image.url }}" alt="{{ car.model }}" style="width: 300px; height: auto;">
+        </div>
+    
+        <h2>Booking Details</h2>
+        <div>
+            {% for label, value in booking_details %}
+                <p><strong>{{ label }}:</strong> {{ value }}</p>
+            {% endfor %}
+        </div>
+    
+        <h2>User Profile</h2>
+        <div>
+            <p><strong>Name:</strong> {{ profile.name }}</p>  
+            <p><strong>Email:</strong> {{ profile.email }}</p>
+            <p><strong>Phone Number:</strong> {{ profile.phone_number }}</p>
+            <p><strong>Date of Birth:</strong> {{ profile.date_of_birth }}</p>
+        </div>
+        
+        <h2>Co-Driver Option</h2>
+        <div>
+            <label for="co_driver_checkbox">
+                <input type="checkbox" id="co_driver_checkbox" name="co_driver" value="800">
+                Add Co-Driver for ₹800
+            </label>
+        </div>
+    
+        <div>
+            <h3>Total Amount Payable: ₹{{ total_cost }}</h3>
+        </div>
+    
+        <div>
+            <button type="submit">Confirm</button>
+        </div>
+    </form>
+</body>
+</html>

@@ -9,11 +9,11 @@ urlpatterns=[
      path('makes',views.makess),
 
 
-     path('user_home',views.user_home),
-     # path('available_car',views.available_car),
-     path('available-cars/<booking_id>',views.available_car, name='available_car'),
- 
-
+     path('user_home', views.user_home),
+     path('available-cars/<booking_id>', views.available_car, name='available_car'),
+     path('BookNow/<cid>/<total_cost>', views.BookNow, name='BookNow'),
+     path('profile_success', views.profile_success),
+     path('checkout/<cid>/<booking_id>', views.checkout, name='checkout'),
 
 
 

@@ -3,7 +3,9 @@ from django.contrib.auth import authenticate,login,logout
 from django.db import IntegrityError
 from django.core.exceptions import ValidationError
 from django.contrib import messages
+from django.http import Http404
 from datetime import datetime
+from django.http import HttpResponse
 from django.utils import timezone
 from .models import *
 import os
@@ -140,41 +142,6 @@ def makess(req):
                 return redirect(car_login)
 # ___________________________________________________________________________ADMIN_________________________________________________________________________________________
 def user_home(req):
-    # if req.method == 'POST':
-    #     # Access form data directly from req.POST
-    #     pickup_location = req.POST.get('pickup-location')
-    #     pickup_date = req.POST.get('pickup-date')
-    #     pickup_hour = req.POST.get('pickup-hour')
-    #     pickup_minute = req.POST.get('pickup-minute')
-    #     pickup_ampm = req.POST.get('pickup-ampm')
-        
-    #     dropoff_location = req.POST.get('dropoff-location')
-    #     dropoff_date = req.POST.get('dropoff-date')
-    #     dropoff_hour = req.POST.get('dropoff-hour')
-    #     dropoff_minute = req.POST.get('dropoff-minute')
-    #     dropoff_ampm = req.POST.get('dropoff-ampm')
-
-    #     # Combine the hour, minute, and AM/PM into a full time string (24-hour format)
-    #     pickup_time_str = f"{pickup_hour}:{pickup_minute} {pickup_ampm}"
-    #     dropoff_time_str = f"{dropoff_hour}:{dropoff_minute} {dropoff_ampm}"
-
-    #     # Convert time to 24-hour format for storing in the database
-    #     pickup_time = datetime.strptime(pickup_time_str, "%I:%M %p").time()
-    #     dropoff_time = datetime.strptime(dropoff_time_str, "%I:%M %p").time()
-
-    #     # Save the booking to the database
-    #     booking = Booking(
-    #         pickup_location=pickup_location,
-    #         pickup_date=pickup_date,
-    #         pickup_time=pickup_time,
-    #         dropoff_location=dropoff_location,
-    #         dropoff_date=dropoff_date,
-    #         dropoff_time=dropoff_time
-    #     )
-    #     booking.save()
-    #     return redirect(available_car)
-
-    # return render(req, 'user/user.html')
     if req.method == 'POST':
         # Access form data directly from req.POST
         pickup_location = req.POST.get('pickup-location')
@@ -259,9 +226,153 @@ def available_car(req, booking_id):
         'data': total_costs,
         'total_days': delta_days,
         'total_hours': total_hours,
-        'total_minutes': total_minutes
+        'total_minutes': total_minutes,
+        'booking': booking  # Pass the booking object to the template if needed
     })
 
+
+def BookNow(req, cid, total_cost):
+    if 'user' in req.session:
+            car = get_object_or_404(Cars, pk=cid)
+            user = get_object_or_404(User, username=req.session['user'])
+            total_cost = float(total_cost)
+            booking = Booking.objects.filter(user=user).first()
+
+            if req.method == "POST":
+                name = req.POST.get('name')
+                email = req.POST.get('email')
+                phone_number = req.POST.get('phone_number')
+                date_of_birth = req.POST.get('date_of_birth')
+                driving_license_front = req.FILES.get('driving_license_front')
+                driving_license_back = req.FILES.get('driving_license_back')
+
+                if not driving_license_front or not driving_license_back:
+                    return HttpResponse("Both front and back sides of the driving license are required.", status=400)
+
+                allowed_extensions = ['jpg', 'jpeg', 'png', 'pdf']
+
+                def is_valid_file(file):
+                    return file.name.split('.')[-1].lower() in allowed_extensions
+
+                if not is_valid_file(driving_license_front) or not is_valid_file(driving_license_back):
+                    return HttpResponse("Invalid file format. Allowed formats: jpg, jpeg, png, pdf.", status=400)
+
+                # Check if a profile already exists for the user
+                profile, created = Profile.objects.get_or_create(
+                    user=user,
+                    defaults={
+                        'name': name,
+                        'email': email,
+                        'phone_number': phone_number,
+                        'date_of_birth': date_of_birth,
+                        'driving_license_front': driving_license_front,
+                        'driving_license_back': driving_license_back,
+                    }
+                )
+
+                if not created:
+                    # If the profile already exists, update the existing profile
+                    profile.name = name
+                    profile.email = email
+                    profile.phone_number = phone_number
+                    profile.date_of_birth = date_of_birth
+                    profile.driving_license_front = driving_license_front
+                    profile.driving_license_back = driving_license_back
+                    profile.save()
+
+                # Create a Buy instance
+                buy = Buy.objects.create(
+                    booking=booking,
+                    car=car,
+                    user=user,
+                    profile=profile,
+                    tot_price=total_cost
+                )
+
+                return redirect('checkout', cid=car.id, booking_id=booking.id)
+
+            return render(req, 'user/profile.html', {'car': car, 'total_cost': total_cost, 'booking': booking})
+    else:
+         return redirect(car_login)
+    
+
+
+def checkout(req, cid, booking_id):
+    # Retrieve the specific booking
+    booking = get_object_or_404(Booking, pk=booking_id)
+    car = get_object_or_404(Cars, pk=cid)  # Using primary key (pk)
+    user = booking.user
+
+    # Retrieve the user's profile
+    profile = Profile.objects.filter(user=user).first()
+    if not profile:
+        messages.error(req, "Profile does not exist. Please complete your profile.")
+        return redirect('profile_edit')  # Ensure this matches your actual profile edit URL name
+
+    # Calculate the total cost
+    total_cost = calculate_total_cost(car, booking)
+
+    if req.method == 'POST':
+        co_driver_added = req.POST.get('co_driver') == "on"  # Checkbox handling
+        if co_driver_added:
+            total_cost += 800  # Add co-driver fee
+            messages.info(req, "Co-driver added. Total cost updated.")
+
+    # Booking details (reversed order)
+    booking_details = [
+        ('Pickup Location', booking.pickup_location),
+        ('Pickup Date', booking.pickup_date),
+        ('Pickup Time', booking.pickup_time),
+        ('Dropoff Location', booking.dropoff_location),
+        ('Dropoff Date', booking.dropoff_date),
+        ('Dropoff Time', booking.dropoff_time),
+    ][::-1]  
+
+    return render(req, 'user/checkout.html', {
+        'booking_details': booking_details,
+        'car': car,
+        'profile': profile,
+        'total_cost': total_cost,
+    })
+
+
+
+def calculate_total_cost(car, booking):
+    price_per_day = car.price_per_day
+    rental_duration = (booking.dropoff_date - booking.pickup_date).days
+    return price_per_day * rental_duration
+
+
+# def buyNow(req,pid):
+#     if 'user' in req.session:
+#         prod=Details.objects.get(pk=pid)
+#         user=User.objects.get(username=req.session['user'])
+#         data=Address.objects.filter(user=user)
+#         if data:
+#             return redirect("orderSummary",prod=prod.pk,data=data)
+#         else:
+#             if req.method=='POST':
+#                 user=User.objects.get(username=req.session['user'])
+#                 name=req.POST['name']
+#                 address=req.POST['address']
+#                 street=req.POST['street']
+#                 city=req.POST['city']
+#                 state=req.POST['state']
+#                 pin=req.POST['pin']
+#                 phone=req.POST['phone']
+#                 data=Address.objects.create(user=user,name=name,address=address,street=street,city=city,state=state,pincode=pin,phone=phone)
+#                 data.save()
+#                 return redirect("orderSummary",prod=prod.pk,data=data)
+#             else:
+#                 return render(req,"user/address.html")
+#     else:
+#                 return redirect(car_login) 
+
+def profile_success(req):
+    return HttpResponse("Profile saved successfully!")
+# def checkout(req):
+     
+#      return render(req,'user/checkout.html')
 
 # def view_cars(req,cid):
 #     if 'user' in req.session:
