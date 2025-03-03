@@ -22,10 +22,22 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item">
-                        <a class="nav-link" href="user_home">Home</a>
+                        <a class="nav-link" href="../../../user_home">Home</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="#">About</a>
+                    </li>
+                    <li>
+                        <div class="dropdown">
+                            <button type="button" class="btn btn-white text-dark btt-1 dropdown-toggle" data-bs-toggle="dropdown">
+                                Makes
+                            </button>
+                            <ul class="dropdown-menu">
+                                {% for i in data1 %}
+                                <li><a class="dropdown-item " href="../../view_makes/{{i.pk }}">{{i.makes}}</a></li>
+                                {% endfor %}
+                            </ul>
+                        </div>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="#">Services</a>

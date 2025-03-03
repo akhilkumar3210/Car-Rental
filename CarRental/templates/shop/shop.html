@@ -51,7 +51,9 @@
                     <h5 class="card-title">{{i.mileage}}km/l</h5>
                     <h5 class="card-title">₹{{i.price_per_day}}/D</h5>
                     <p class="card-text">{{i.description}}</p>
-                    <a href="#" class="btn btn-primary">Edit</a>
+                    <a href="edit/{{i.pk}}" class="btn btn-primary">Edit</a>
+                    <a href="delete/{{i.pk}}" class="btn btn-primary">Delete</a>
+
                 </div>
                 <div class="card-footer text-muted">
                     <small>Last updated 3 mins ago</small>

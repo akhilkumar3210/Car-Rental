@@ -1,7 +1,6 @@
 
 .navbar {
-    position: relative;
-    overflow: hidden;
+    position: fixed;
 }
 
 .nav-link {
@@ -23,6 +22,26 @@
 
 .nav-link:hover {
     color: #007bff; 
+}
+.dropdown-toggle {
+    background-color: #ffffff;
+    border: 1px solid #ced4da;
+    border-radius: 0.25rem;
+    padding: 0.375rem 0.75rem;
+}
+
+.dropdown-menu {
+    background-color: #ffffff;
+    border: 1px solid #ced4da;
+}
+
+.dropdown-item {
+    color: #333;
+}
+
+.dropdown-item:hover {
+    background-color: #f1f1f1;
+    color: #007bff;
 }
 
 .nav-link:hover::after {
@@ -84,7 +103,25 @@
 }
 
 
+.navbar {
+    background-color: #f8f9fa;
+}
 
+.navbar .nav-link {
+    color: #333;
+}
+
+.navbar .nav-link:hover {
+    color: #007bff;
+}
+
+.dropdown-menu {
+    background-color: #ffffff;
+}
+
+.dropdown-item:hover {
+    background-color: #f1f1f1;
+}
 
 
 

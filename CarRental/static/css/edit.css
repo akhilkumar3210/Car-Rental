@@ -1,0 +1,119 @@
+.navbar {
+    position: relative;
+    overflow: hidden;
+}
+
+.nav-link {
+    position: relative;
+    color: #333;
+    transition: color 0.3s ease;
+}
+
+.nav-link::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    bottom: 0;
+    width: 0;
+    height: 2px;
+    background: #007bff; 
+    transition: width 0.3s ease, left 0.3s ease;
+}
+
+.nav-link:hover {
+    color: #007bff; 
+}
+
+.nav-link:hover::after {
+    width: 100%;
+    left: 0;
+}
+
+.logo-img {
+    width: 300px; 
+    height:100px; 
+  }
+
+
+
+
+
+
+/* Form Container */
+.mt-5 {
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    max-width: 600px;
+    margin: auto;
+}
+
+/* Form Elements */
+form {
+    display: flex;
+    flex-direction: column;
+}
+
+/* Labels */
+label {
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+/* Input Fields */
+input[type="text"],
+input[type="number"],
+select,
+textarea {
+    padding: 10px;
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 16px;
+}
+
+/* Textarea */
+textarea {
+    resize: vertical; /* Allow vertical resizing */
+}
+
+/* Button */
+button {
+    padding: 10px;
+    background-color: #28a745; /* Green */
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+button:hover {
+    background-color: #218838; /* Darker green on hover */
+}
+
+/* Small Text */
+small {
+    color: #666;
+    font-size: 12px;
+}
+
+/* Responsive Styles */
+@media (max-width: 600px) {
+    .mt-5 {
+        padding: 15px;
+    }
+
+    input[type="text"],
+    input[type="number"],
+    select,
+    textarea {
+        font-size: 14px;
+    }
+
+    button {
+        font-size: 14px;
+    }
+}

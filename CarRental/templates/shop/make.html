@@ -60,7 +60,8 @@
                 <tr>
                     <th scope="row"></th>
                     <td>{{i.makes}}</td>
-                    <td></td>
+                    <td><a href="delete_make/{{ i.pk }}" class="btn btn-danger">Delete</a></td>
+                    <td><a href="view_make/{{i.pk }}" class="btn btn-secondary">view make</a></td>
                     <td></td>
                 </tr>
                 {%  endfor %}

@@ -7,9 +7,15 @@ urlpatterns=[
      path('shop_home',views.shop_home),
      path('addcars',views.addcars),
      path('makes',views.makess),
+     path('delete_make/<id>',views.delete_make),
+     path('delete/<pid>',views.delete_cars),
+     path('edit/<id>',views.edit_cars),
+     path('view_make/<id>',views.view_make),
+
 
 
      path('user_home', views.user_home),
+     path('view_makes/<id>',views.view_makes),
      path('available-cars/<booking_id>', views.available_car, name='available_car'),
      path('BookNow/<cid>/<total_cost>', views.BookNow, name='BookNow'),
      path('profile_success', views.profile_success),

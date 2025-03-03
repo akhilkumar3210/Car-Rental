@@ -140,6 +140,47 @@ def makess(req):
                         return render(req,'shop/make.html',{'data':data})
         else:
                 return redirect(car_login)
+        
+def delete_make(req,id):
+     data=Makes.objects.get(pk=id)
+     data.delete()
+     return redirect(makess)
+
+def view_make(req,id):
+    make= Makes.objects.get(pk=id)
+    cars = Cars.objects.filter(make=make)
+    return render(req, 'shop/view_make.html', {'make': make,'cars': cars})
+
+def delete_cars(req,pid):
+    data=Cars.objects.get(pk=pid)
+    file=data.image.url
+    file=file.split('/')[-1]
+    os.remove('media/'+file)
+    data.delete()
+    return redirect(shop_home)
+
+def edit_cars(req,id):
+    if req.method=='POST':
+        model=req.POST['model']
+        year=req.POST['year']
+        body_type=req.POST['body_type']
+        fuel=req.POST['fuel']
+        transmission=req.POST['transmission']
+        mileage=req.POST['mileage']
+        price_per_day=req.POST['price_per_day']
+        description=req.POST['description']
+        image=req.FILES.get('image')
+        if image:
+            Cars.objects.filter(pk=id).update(model= model,year=year,bodytype=body_type, fuel= fuel,transmission=transmission, mileage= mileage,price_per_day=price_per_day,description=description)
+            data=Cars.objects.get(pk=id)
+            data.image=image
+            data.save()
+        else:
+            Cars.objects.filter(pk=id).update(model= model,year=year,bodytype=body_type, fuel= fuel,transmission=transmission, mileage= mileage,price_per_day=price_per_day,description=description)
+        return redirect(shop_home)
+    else:
+        car=Cars.objects.get(pk=id)      
+        return render(req,'shop/edit.html',{'car':car})
 # ___________________________________________________________________________ADMIN_________________________________________________________________________________________
 def user_home(req):
     if req.method == 'POST':
@@ -178,7 +219,6 @@ def user_home(req):
             dropoff_time=dropoff_time,
             user=req.user  # Assuming the user is logged in
         )
-        
         try:
             booking.save()
             return redirect('available_car', booking_id=booking.id)  # Redirect to available_car with booking ID
@@ -188,6 +228,15 @@ def user_home(req):
             # Optionally, you can redirect to an error page or show a message
 
     return render(req, 'user/user.html')
+
+def view_makes(req,id):
+    if 'user' in req.session:
+        make= Makes.objects.get(pk=id)
+        cars = Cars.objects.filter(make=make)
+        cat=Makes.objects.all()
+        return render(req,'user/viewmake.html', {'make': make,'cars': cars,'cat':cat})
+    else:
+         return redirect(car_login)
  
 def available_car(req, booking_id):
     # Retrieve the booking using the provided booking_id
@@ -212,7 +261,8 @@ def available_car(req, booking_id):
 
     # Fetch available cars
     available_cars = Cars.objects.all()  # Modify this to filter based on your criteria
-
+    
+    data1=Makes.objects.all()
     # Calculate total cost for each car based on the number of days and price per day
     total_costs = []
     for car in available_cars:
@@ -227,7 +277,8 @@ def available_car(req, booking_id):
         'total_days': delta_days,
         'total_hours': total_hours,
         'total_minutes': total_minutes,
-        'booking': booking  # Pass the booking object to the template if needed
+        'booking': booking,  
+        'data1':data1
     })
 
 
