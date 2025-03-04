@@ -5,9 +5,9 @@
   {% load static %}
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title> Login Page</title>
+  <title>OTP Page</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="{% static 'css/login.css' %}">
+  <link rel="stylesheet" href="{% static 'css/validate.css' %}">
   <link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet">
 </head>
 
@@ -17,20 +17,15 @@
       <div class="col-md-6 col-lg-4">
         <div class="login-card p-4 shadow-lg rounded-3 animate__animated animate__fadeIn">
           <img src="{% static 'images/logo-car.png' %}" alt="" class="logo-img">
-          <h2 class="text-center mb-4 fw-bold">Enter Login Credentials</h2>
-          <form id="loginForm" action="" method="post">
+          <h2 class="text-center mb-4 fw-bold">Enter Your Credentials</h2>
+          <form  action="" method="post">
             {% csrf_token %}
             <div class="mb-3">
-              <label for="email" class="form-label">Username</label>
-              <input type="text" class="form-control" name="uname" placeholder="Enter your email" required>
+              <label for="credentials" class="form-label">Enter OTP</label>
+              <input type="text" class="form-control" name="uotp" placeholder="Enter OTP" required>
             </div>
-            <div class="mb-3">
-              <label for="password" class="form-label">Password</label>
-              <input type="password" class="form-control" name="password" placeholder="Enter your password" required>
-            </div>
-            <button type="submit" class="btn btn-primary w-100 mt-3">Login</button>
+            <button type="submit" class="btn btn-primary w-100 mt-3">Submit</button>
           </form>
-          <p class="text-centerr mt-3">Don't have an account? <a href="register" class="text-decoration-none">Sign Up</a></p>
         </div>
       </div>
     </div>
@@ -49,5 +44,4 @@
   <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.min.js"></script>
 </body>
-
 </html>

@@ -5,6 +5,10 @@ from django.core.exceptions import ValidationError
 from django.contrib import messages
 from django.http import Http404
 from datetime import datetime
+import math,random
+from django.contrib.auth.decorators import login_required
+from django.core.mail import send_mail
+from django.conf import settings
 from django.http import HttpResponse
 from django.utils import timezone
 from .models import *
@@ -36,18 +40,47 @@ def car_login(req):
 def register(req):
     if req.method=='POST':
         email=req.POST['email']
-        uname=req.POST['uname']
+        name=req.POST['uname']
         password=req.POST['password']
-        try:
-            data=User.objects.create_user(first_name=uname,email=email,username=email,password=password)
-            data.save()
-        #     send_mail('Registration In EcommShop', 'Successfully Registered In EcommShop', settings.EMAIL_HOST_USER, [email])
-            return redirect(car_login)
-        except:
-            messages.warning(req,'Email Already Exists!!')
+        otp=OTP(req)
+        if User.objects.filter(email=email).exists():
+            messages.error(req, "Email is already in use.")
             return redirect(register)
+        else:
+            send_mail('Your registration OTP ,',f"OTP for registration is {otp}", settings.EMAIL_HOST_USER, [email])
+            messages.success(req, "Registration successful. Please check your email for OTP.")
+            return redirect("validate",name=name,password=password,email=email,otp=otp)
+        # try:
+        #     data=User.objects.create_user(first_name=uname,email=email,username=email,password=password)
+        #     data.save()
+        # #     send_mail('Registration In EcommShop', 'Successfully Registered In EcommShop', settings.EMAIL_HOST_USER, [email])
+        #     return redirect(car_login)
+        # except:
+        #     messages.warning(req,'Email Already Exists!!')
+        #     return redirect(register)
     else:
         return render(req,'register.html')
+    
+def OTP(req):
+    digits = "0123456789"
+    OTP = ""
+    for i in range(6) :
+        OTP += digits[math.floor(random.random() * 10)]
+    return OTP
+
+def validate(req,name,password,email,otp):
+    if req.method=='POST':
+        uotp=req.POST['uotp']
+        if uotp==otp:
+            data=User.objects.create_user(first_name=name,email=email,password=password,username=email)
+            data.save()
+            messages.success(req, "OTP verified successfully. You can now log in.")
+            return redirect(car_login)
+        else:
+            messages.error(req, "Invalid OTP. Please try again.")
+            return redirect("validate",name=name,password=password,email=email,otp=otp)
+    else:
+        return render(req,'validate.html',{'name':name,'pass':password,'email':email,'otp':otp})
 
 
 def car_logout(req):
@@ -127,6 +160,10 @@ def addcars(req):
     else:
         data = Makes.objects.all()
         return render(req, 'shop/addcars.html', {'data': data})
+    
+def customerprofile(req):
+     data=Profile.objects.all()
+     return render(req,'shop/profile.html',{'data':data})
 
 def makess(req):
         if 'shop' in req.session:
@@ -182,6 +219,7 @@ def edit_cars(req,id):
         car=Cars.objects.get(pk=id)      
         return render(req,'shop/edit.html',{'car':car})
 # ___________________________________________________________________________ADMIN_________________________________________________________________________________________
+
 def user_home(req):
     if req.method == 'POST':
         # Access form data directly from req.POST
@@ -239,34 +277,27 @@ def view_makes(req,id):
          return redirect(car_login)
  
 def available_car(req, booking_id):
-    # Retrieve the booking using the provided booking_id
     booking = get_object_or_404(Booking, pk=booking_id)
-
-    # Get the pickup and dropoff dates and times from the booking
     pickupdate = booking.pickup_date
     dropoff_date = booking.dropoff_date
     pickup_time = booking.pickup_time
     dropoff_time = booking.dropoff_time
 
-    # Calculate the difference between pickup and dropoff dates
-    delta_days = (dropoff_date - pickupdate).days  # Get the number of full days
-
-    # Calculate total hours and minutes
+    delta_days = (dropoff_date - pickupdate).days
     pickup_datetime = datetime.combine(pickupdate, pickup_time)
     dropoff_datetime = datetime.combine(dropoff_date, dropoff_time)
     total_duration = dropoff_datetime - pickup_datetime
 
-    total_hours = total_duration.seconds // 3600  # Total hours
-    total_minutes = (total_duration.seconds // 60) % 60  # Remaining minutes
+    total_hours = total_duration.seconds // 3600
+    total_minutes = (total_duration.seconds // 60) % 60
 
-    # Fetch available cars
-    available_cars = Cars.objects.all()  # Modify this to filter based on your criteria
+    available_cars = Cars.objects.all()
+    data1 = Makes.objects.all()
     
-    data1=Makes.objects.all()
-    # Calculate total cost for each car based on the number of days and price per day
     total_costs = []
     for car in available_cars:
         total_cost = (car.price_per_day * delta_days) + (car.price_per_day / 24 * total_hours) + (car.price_per_day / 1440 * total_minutes)
+        total_cost = round(total_cost)
         total_costs.append({
             'car': car,
             'total_cost': total_cost
@@ -278,17 +309,28 @@ def available_car(req, booking_id):
         'total_hours': total_hours,
         'total_minutes': total_minutes,
         'booking': booking,  
-        'data1':data1
+        'data1': data1
     })
 
 
 def BookNow(req, cid, total_cost):
     if 'user' in req.session:
-            car = get_object_or_404(Cars, pk=cid)
-            user = get_object_or_404(User, username=req.session['user'])
-            total_cost = float(total_cost)
-            booking = Booking.objects.filter(user=user).first()
+        car = get_object_or_404(Cars, pk=cid)
+        user = get_object_or_404(User, username=req.session['user'])
+        total_cost = float(total_cost)
+        booking = Booking.objects.filter(user=user).first()
+        profile = Profile.objects.filter(user=user).first()  # Get the first profile or None
 
+        if profile:
+            buy = Buy.objects.create(
+                booking=booking,
+                car=car,
+                user=user,
+                profile=profile,
+                tot_price=total_cost
+            )
+            return redirect('checkout', cid=car.id, booking_id=booking.id, buy_id=buy.id)
+        else:
             if req.method == "POST":
                 name = req.POST.get('name')
                 email = req.POST.get('email')
@@ -308,30 +350,16 @@ def BookNow(req, cid, total_cost):
                 if not is_valid_file(driving_license_front) or not is_valid_file(driving_license_back):
                     return HttpResponse("Invalid file format. Allowed formats: jpg, jpeg, png, pdf.", status=400)
 
-                # Check if a profile already exists for the user
-                profile, created = Profile.objects.get_or_create(
+                profile = Profile.objects.create(
                     user=user,
-                    defaults={
-                        'name': name,
-                        'email': email,
-                        'phone_number': phone_number,
-                        'date_of_birth': date_of_birth,
-                        'driving_license_front': driving_license_front,
-                        'driving_license_back': driving_license_back,
-                    }
+                    name=name,
+                    email=email,
+                    phone_number=phone_number,
+                    date_of_birth=date_of_birth,
+                    driving_license_front=driving_license_front,
+                    driving_license_back=driving_license_back
                 )
 
-                if not created:
-                    # If the profile already exists, update the existing profile
-                    profile.name = name
-                    profile.email = email
-                    profile.phone_number = phone_number
-                    profile.date_of_birth = date_of_birth
-                    profile.driving_license_front = driving_license_front
-                    profile.driving_license_back = driving_license_back
-                    profile.save()
-
-                # Create a Buy instance
                 buy = Buy.objects.create(
                     booking=booking,
                     car=car,
@@ -340,36 +368,36 @@ def BookNow(req, cid, total_cost):
                     tot_price=total_cost
                 )
 
-                return redirect('checkout', cid=car.id, booking_id=booking.id)
+                return redirect('checkout', cid=car.id, booking_id=booking.id, buy_id=buy.id)
 
             return render(req, 'user/profile.html', {'car': car, 'total_cost': total_cost, 'booking': booking})
     else:
-         return redirect(car_login)
-    
+        return redirect(car_login)
 
 
-def checkout(req, cid, booking_id):
-    # Retrieve the specific booking
+
+def checkout(req, cid, booking_id, buy_id):
     booking = get_object_or_404(Booking, pk=booking_id)
-    car = get_object_or_404(Cars, pk=cid)  # Using primary key (pk)
+    car = get_object_or_404(Cars, pk=cid)
+    buy = get_object_or_404(Buy, pk=buy_id)
     user = booking.user
 
-    # Retrieve the user's profile
     profile = Profile.objects.filter(user=user).first()
     if not profile:
         messages.error(req, "Profile does not exist. Please complete your profile.")
-        return redirect('profile_edit')  # Ensure this matches your actual profile edit URL name
+        return redirect('profile_edit')
 
-    # Calculate the total cost
-    total_cost = calculate_total_cost(car, booking)
+    # Initialize total cost with the price from the Buy instance
+    total_cost = float(req.GET.get('total_cost', buy.tot_price))
 
     if req.method == 'POST':
-        co_driver_added = req.POST.get('co_driver') == "on"  # Checkbox handling
+        co_driver_added = req.POST.get('co_driver') == "on"
         if co_driver_added:
             total_cost += 800  # Add co-driver fee
-            messages.info(req, "Co-driver added. Total cost updated.")
+            messages.info(req, "Co-driver added. Total cost updated to ${:.2f}".format(total_cost))
+        else:
+            messages.info(req, "Co-driver option not selected. Total cost remains at ${:.2f}".format(total_cost))
 
-    # Booking details (reversed order)
     booking_details = [
         ('Pickup Location', booking.pickup_location),
         ('Pickup Date', booking.pickup_date),
@@ -377,16 +405,15 @@ def checkout(req, cid, booking_id):
         ('Dropoff Location', booking.dropoff_location),
         ('Dropoff Date', booking.dropoff_date),
         ('Dropoff Time', booking.dropoff_time),
-    ][::-1]  
+    ][::-1]
 
     return render(req, 'user/checkout.html', {
         'booking_details': booking_details,
         'car': car,
         'profile': profile,
         'total_cost': total_cost,
+        'buy': buy
     })
-
-
 
 def calculate_total_cost(car, booking):
     price_per_day = car.price_per_day

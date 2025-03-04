@@ -30,7 +30,7 @@
                         <a class="nav-link" href="#">About</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="#">Services</a>
+                        <a class="nav-link" href="#">Add Profile</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="logout">Logout</a>
@@ -143,7 +143,7 @@
             <label class="toggle">
                 <span class="slider"></span>
             </label>
-
+    
             <div class="booking-section">
                 <div class="option">
                     <label for="pickup">Pick - Up</label>
@@ -156,7 +156,7 @@
                             <option>High Court</option>
                         </select>
                         <label>Date</label>
-                        <input type="date" id="pickup-date" name="pickup-date">
+                        <input type="date" id="pickup-date" name="pickup-date" required>
                         <label>Time</label>
                         <div class="time-container">
                             <input type="number" id="pickup-hour" name="pickup-hour" min="1" max="12" placeholder="Hour" required>
@@ -168,9 +168,9 @@
                         </div>
                     </div>
                 </div>
-
+    
                 <div class="switch-icon">⇄</div>
-
+    
                 <div class="option">
                     <label for="dropoff">Drop - Off</label>
                     <div class="details">
@@ -182,7 +182,7 @@
                             <option>High Court</option>
                         </select>
                         <label>Date</label>
-                        <input type="date" id="dropoff-date" name="dropoff-date">
+                        <input type="date" id="dropoff-date" name="dropoff-date" required>
                         <label>Time</label>
                         <div class="time-container">
                             <input type="number" id="dropoff-hour" name="dropoff-hour" min="1" max="12" placeholder="Hour" required>
@@ -195,11 +195,47 @@
                     </div>
                 </div>
             </div>
-
+    
             <button type="submit" class="btn">Let's Drive</button>
         </form>
     </div>
 </div>
+
+<script>
+   document.addEventListener('DOMContentLoaded', function() {
+    // Set today's date as the minimum date for both pick-up and drop-off
+    const today = new Date();
+    const minDate = today.toISOString().split('T')[0]; // Format: YYYY-MM-DD
+    document.getElementById('pickup-date').setAttribute('min', minDate);
+    document.getElementById('dropoff-date').setAttribute('min', minDate);
+
+    // Function to set time limits for pick-up only
+    function setPickupTime() {
+        const now = new Date();
+        const futureTime = new Date(now.getTime() + 3 * 60 * 60 * 1000); // Current time + 3 hours
+
+        // Get the hour and minute for the future time
+        let futureHour = futureTime.getHours();
+        const futureMinute = futureTime.getMinutes();
+        const futureAMPM = futureHour >= 12 ? 'PM' : 'AM';
+
+        // Convert to 12-hour format
+        futureHour = futureHour % 12 || 12; // Wrap around 12
+
+        // Set the hour and minute for pick-up
+        document.getElementById('pickup-hour').value = futureHour;
+        document.getElementById('pickup-minute').value = futureMinute;
+        document.getElementById('pickup-ampm').value = futureAMPM;
+
+        // Clear drop-off time inputs
+        document.getElementById('dropoff-hour').value = '';
+        document.getElementById('dropoff-minute').value = '';
+        document.getElementById('dropoff-ampm').value = 'AM'; // Default to AM
+    }
+
+    setPickupTime();
+});
+</script>
 
 
 

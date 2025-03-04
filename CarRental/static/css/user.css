@@ -1,6 +1,7 @@
 
 .navbar {
-    position: fixed;
+    position:fixed ;
+    margin-bottom: 10vh;
 }
 
 .nav-link {

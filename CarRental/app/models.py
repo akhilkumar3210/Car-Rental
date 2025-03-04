@@ -51,7 +51,7 @@ class Cars(models.Model):
     fuel=models.TextField()
     transmission=models.TextField()
     mileage = models.IntegerField()
-    price_per_day = models.FloatField()
+    price_per_day = models.IntegerField()
     description = models.TextField()
     image = models.FileField()
 
@@ -73,23 +73,6 @@ class Buy(models.Model):
     tot_price=models.IntegerField()
     date=models.DateField(auto_now_add=True)
 
-
-class Rental(models.Model):
-    STATUS_CHOICES = [
-        ('pending', 'Pending'),
-        ('confirmed', 'Confirmed'),
-        ('completed', 'Completed'),
-        ('canceled', 'Canceled'),
-    ]
-
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    # car = models.ForeignKey(Cars, on_delete=models.CASCADE)
-    start_date = models.DateTimeField()
-    end_date = models.DateTimeField()
-    total_price = models.DecimalField(max_digits=10, decimal_places=2)
-    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='pending')
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
 
 
 
