@@ -24,7 +24,12 @@ urlpatterns=[
      path('available-cars/<booking_id>', views.available_car, name='available_car'),
      path('BookNow/<cid>/<total_cost>', views.BookNow, name='BookNow'),
      path('profile_success', views.profile_success),
+     path('profile_success/', views.profile_success, name='profile_success'),
      path('checkout/<cid>/<booking_id>/<buy_id>', views.checkout, name='checkout'),
+     path('rent_payment/<total_amount>',views.rent_payment,name="rent_payment"),
+     path('callback',views.callback,name="callback"),
+     path('rentbook',views.rentbook,name="rentbook")
+
 
 
 

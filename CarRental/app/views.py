@@ -4,12 +4,16 @@ from django.db import IntegrityError
 from django.core.exceptions import ValidationError
 from django.contrib import messages
 from django.http import Http404
+import json
 from datetime import datetime
 import math,random
+import razorpay
+from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.decorators import login_required
 from django.core.mail import send_mail
 from django.conf import settings
 from django.http import HttpResponse
+from django.core.exceptions import ObjectDoesNotExist
 from django.utils import timezone
 from .models import *
 import os
@@ -221,51 +225,54 @@ def edit_cars(req,id):
 # ___________________________________________________________________________ADMIN_________________________________________________________________________________________
 
 def user_home(req):
-    if req.method == 'POST':
-        # Access form data directly from req.POST
-        pickup_location = req.POST.get('pickup-location')
-        pickup_date = req.POST.get('pickup-date')
-        pickup_hour = req.POST.get('pickup-hour')
-        pickup_minute = req.POST.get('pickup-minute')
-        pickup_ampm = req.POST.get('pickup-ampm')
-        
-        dropoff_location = req.POST.get('dropoff-location')
-        dropoff_date = req.POST.get('dropoff-date')
-        dropoff_hour = req.POST.get('dropoff-hour')
-        dropoff_minute = req.POST.get('dropoff-minute')
-        dropoff_ampm = req.POST.get('dropoff-ampm')
+    if 'user' in req.session:
+            if req.method == 'POST':
+                # Access form data directly from req.POST
+                pickup_location = req.POST.get('pickup-location')
+                pickup_date = req.POST.get('pickup-date')
+                pickup_hour = req.POST.get('pickup-hour')
+                pickup_minute = req.POST.get('pickup-minute')
+                pickup_ampm = req.POST.get('pickup-ampm')
+                
+                dropoff_location = req.POST.get('dropoff-location')
+                dropoff_date = req.POST.get('dropoff-date')
+                dropoff_hour = req.POST.get('dropoff-hour')
+                dropoff_minute = req.POST.get('dropoff-minute')
+                dropoff_ampm = req.POST.get('dropoff-ampm')
 
-        # Combine the hour, minute, and AM/PM into a full time string (24-hour format)
-        pickup_time_str = f"{pickup_hour}:{pickup_minute} {pickup_ampm}"
-        dropoff_time_str = f"{dropoff_hour}:{dropoff_minute} {dropoff_ampm}"
+                # Combine the hour, minute, and AM/PM into a full time string (24-hour format)
+                pickup_time_str = f"{pickup_hour}:{pickup_minute} {pickup_ampm}"
+                dropoff_time_str = f"{dropoff_hour}:{dropoff_minute} {dropoff_ampm}"
 
-        # Convert time to 24-hour format for storing in the database
-        pickup_time = datetime.strptime(pickup_time_str, "%I:%M %p").time()
-        dropoff_time = datetime.strptime(dropoff_time_str, "%I:%M %p").time()
+                # Convert time to 24-hour format for storing in the database
+                pickup_time = datetime.strptime(pickup_time_str, "%I:%M %p").time()
+                dropoff_time = datetime.strptime(dropoff_time_str, "%I:%M %p").time()
 
-        # Convert dates from string to date objects
-        pickup_date = datetime.strptime(pickup_date, "%Y-%m-%d").date()
-        dropoff_date = datetime.strptime(dropoff_date, "%Y-%m-%d").date()
+                # Convert dates from string to date objects
+                pickup_date = datetime.strptime(pickup_date, "%Y-%m-%d").date()
+                dropoff_date = datetime.strptime(dropoff_date, "%Y-%m-%d").date()
 
-        # Save the booking to the database
-        booking = Booking(
-            pickup_location=pickup_location,
-            pickup_date=pickup_date,
-            pickup_time=pickup_time,
-            dropoff_location=dropoff_location,
-            dropoff_date=dropoff_date,
-            dropoff_time=dropoff_time,
-            user=req.user  # Assuming the user is logged in
-        )
-        try:
-            booking.save()
-            return redirect('available_car', booking_id=booking.id)  # Redirect to available_car with booking ID
-        except Exception as e:
-            # Handle the error (e.g., log it, show a message, etc.)
-            print(f"Error saving booking: {e}")
-            # Optionally, you can redirect to an error page or show a message
+                # Save the booking to the database
+                booking = Booking(
+                    pickup_location=pickup_location,
+                    pickup_date=pickup_date,
+                    pickup_time=pickup_time,
+                    dropoff_location=dropoff_location,
+                    dropoff_date=dropoff_date,
+                    dropoff_time=dropoff_time,
+                    user=req.user  # Assuming the user is logged in
+                )
+                try:
+                    booking.save()
+                    return redirect('available_car', booking_id=booking.id)  # Redirect to available_car with booking ID
+                except Exception as e:
+                    # Handle the error (e.g., log it, show a message, etc.)
+                    print(f"Error saving booking: {e}")
+                    # Optionally, you can redirect to an error page or show a message
 
-    return render(req, 'user/user.html')
+            return render(req, 'user/user.html')
+    else:
+         return redirect(car_login)
 
 def view_makes(req,id):
     if 'user' in req.session:
@@ -277,40 +284,43 @@ def view_makes(req,id):
          return redirect(car_login)
  
 def available_car(req, booking_id):
-    booking = get_object_or_404(Booking, pk=booking_id)
-    pickupdate = booking.pickup_date
-    dropoff_date = booking.dropoff_date
-    pickup_time = booking.pickup_time
-    dropoff_time = booking.dropoff_time
+    if 'user' in req.session:
+                booking = get_object_or_404(Booking, pk=booking_id)
+                pickupdate = booking.pickup_date
+                dropoff_date = booking.dropoff_date
+                pickup_time = booking.pickup_time
+                dropoff_time = booking.dropoff_time
 
-    delta_days = (dropoff_date - pickupdate).days
-    pickup_datetime = datetime.combine(pickupdate, pickup_time)
-    dropoff_datetime = datetime.combine(dropoff_date, dropoff_time)
-    total_duration = dropoff_datetime - pickup_datetime
+                delta_days = (dropoff_date - pickupdate).days
+                pickup_datetime = datetime.combine(pickupdate, pickup_time)
+                dropoff_datetime = datetime.combine(dropoff_date, dropoff_time)
+                total_duration = dropoff_datetime - pickup_datetime
 
-    total_hours = total_duration.seconds // 3600
-    total_minutes = (total_duration.seconds // 60) % 60
+                total_hours = total_duration.seconds // 3600
+                total_minutes = (total_duration.seconds // 60) % 60
 
-    available_cars = Cars.objects.all()
-    data1 = Makes.objects.all()
-    
-    total_costs = []
-    for car in available_cars:
-        total_cost = (car.price_per_day * delta_days) + (car.price_per_day / 24 * total_hours) + (car.price_per_day / 1440 * total_minutes)
-        total_cost = round(total_cost)
-        total_costs.append({
-            'car': car,
-            'total_cost': total_cost
-        })
+                available_cars = Cars.objects.all()
+                data1 = Makes.objects.all()
+                
+                total_costs = []
+                for car in available_cars:
+                    total_cost = (car.price_per_day * delta_days) + (car.price_per_day / 24 * total_hours) + (car.price_per_day / 1440 * total_minutes)
+                    total_cost = round(total_cost)
+                    total_costs.append({
+                        'car': car,
+                        'total_cost': total_cost
+                    })
 
-    return render(req, 'user/available-cars.html', {
-        'data': total_costs,
-        'total_days': delta_days,
-        'total_hours': total_hours,
-        'total_minutes': total_minutes,
-        'booking': booking,  
-        'data1': data1
-    })
+                return render(req, 'user/available-cars.html', {
+                    'data': total_costs,
+                    'total_days': delta_days,
+                    'total_hours': total_hours,
+                    'total_minutes': total_minutes,
+                    'booking': booking,  
+                    'data1': data1
+                })
+    else:
+         return redirect(car_login)
 
 
 def BookNow(req, cid, total_cost):
@@ -318,7 +328,7 @@ def BookNow(req, cid, total_cost):
         car = get_object_or_404(Cars, pk=cid)
         user = get_object_or_404(User, username=req.session['user'])
         total_cost = float(total_cost)
-        booking = Booking.objects.filter(user=user).first()
+        booking = Booking.objects.filter(user=user).first() 
         profile = Profile.objects.filter(user=user).first()  # Get the first profile or None
 
         if profile:
@@ -375,13 +385,20 @@ def BookNow(req, cid, total_cost):
         return redirect(car_login)
 
 
-
 def checkout(req, cid, booking_id, buy_id):
-    booking = get_object_or_404(Booking, pk=booking_id)
+    user = req.user  # Get the currently logged-in user
+
+    # Ensure the user is authenticated
+    if not user.is_authenticated:
+        messages.error(req, "You need to be logged in to access this page.")
+        return redirect('login')  # Redirect to login page if not authenticated
+
+    # Get the booking for the user
+    booking = get_object_or_404(Booking, pk=booking_id, user=user)
     car = get_object_or_404(Cars, pk=cid)
     buy = get_object_or_404(Buy, pk=buy_id)
-    user = booking.user
 
+    # Retrieve the user's profile
     profile = Profile.objects.filter(user=user).first()
     if not profile:
         messages.error(req, "Profile does not exist. Please complete your profile.")
@@ -393,70 +410,130 @@ def checkout(req, cid, booking_id, buy_id):
     if req.method == 'POST':
         co_driver_added = req.POST.get('co_driver') == "on"
         if co_driver_added:
-            total_cost += 800  # Add co-driver fee
+            total_cost += 500  # Change co-driver fee to 500
             messages.info(req, "Co-driver added. Total cost updated to ${:.2f}".format(total_cost))
         else:
             messages.info(req, "Co-driver option not selected. Total cost remains at ${:.2f}".format(total_cost))
 
-    booking_details = [
-        ('Pickup Location', booking.pickup_location),
-        ('Pickup Date', booking.pickup_date),
-        ('Pickup Time', booking.pickup_time),
-        ('Dropoff Location', booking.dropoff_location),
-        ('Dropoff Date', booking.dropoff_date),
-        ('Dropoff Time', booking.dropoff_time),
-    ][::-1]
+        # Create the Rented instance
+        rented = Rented.objects.create(
+            buy=buy,
+            booking=booking,
+            car=car,
+            user=user,
+            profile=profile,
+            tot_price=total_cost
+        )
+        rented.save()
+        # Delete the car from the Cars model
+        car.delete()  # This will remove the car from the database
+
+        # Redirect to the rent_payment view with the total amount
+        return redirect('rent_payment', total_amount=total_cost)  # Redirect to rent_payment view
 
     return render(req, 'user/checkout.html', {
-        'booking_details': booking_details,
+        'booking': booking,
         'car': car,
         'profile': profile,
         'total_cost': total_cost,
         'buy': buy
     })
 
-def calculate_total_cost(car, booking):
-    price_per_day = car.price_per_day
-    rental_duration = (booking.dropoff_date - booking.pickup_date).days
-    return price_per_day * rental_duration
+def profile_success(request):
+    return render(request, 'user/profile_success.html')
 
 
-# def buyNow(req,pid):
-#     if 'user' in req.session:
-#         prod=Details.objects.get(pk=pid)
-#         user=User.objects.get(username=req.session['user'])
-#         data=Address.objects.filter(user=user)
-#         if data:
-#             return redirect("orderSummary",prod=prod.pk,data=data)
-#         else:
-#             if req.method=='POST':
-#                 user=User.objects.get(username=req.session['user'])
-#                 name=req.POST['name']
-#                 address=req.POST['address']
-#                 street=req.POST['street']
-#                 city=req.POST['city']
-#                 state=req.POST['state']
-#                 pin=req.POST['pin']
-#                 phone=req.POST['phone']
-#                 data=Address.objects.create(user=user,name=name,address=address,street=street,city=city,state=state,pincode=pin,phone=phone)
-#                 data.save()
-#                 return redirect("orderSummary",prod=prod.pk,data=data)
-#             else:
-#                 return render(req,"user/address.html")
-#     else:
-#                 return redirect(car_login) 
+def rent_payment(req, total_amount):
+    if 'user' in req.session:
+        user = User.objects.get(username=req.session['user'])
+        name = user.first_name
+        amount = int(float(total_amount)) 
+        client = razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET))
+        razorpay_order = client.order.create(
+            {"amount": int(amount) * 100, "currency": "INR", "payment_capture": "1"}
+        )
+        order_id=razorpay_order['id']
+        order = Order.objects.create(
+            name=name, amount=amount, provider_order_id=order_id
+        )
+        order.save()
+        return render(
+            req,
+            "user/payment.html",
+            {
+                "callback_url": "http://127.0.0.1:8000/callback",
+                "razorpay_key": settings.RAZORPAY_KEY_ID,
+                "order": order,
+            },
+        )
+    else:
+        return render(car_login)
+@csrf_exempt
+def callback(request):
+    def verify_signature(response_data):
+        client = razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET))
+        return client.utility.verify_payment_signature(response_data)
 
-def profile_success(req):
-    return HttpResponse("Profile saved successfully!")
-# def checkout(req):
-     
-#      return render(req,'user/checkout.html')
+    if "razorpay_signature" in request.POST:
+        payment_id = request.POST.get("razorpay_payment_id", "")
+        provider_order_id = request.POST.get("razorpay_order_id", "")
+        signature_id = request.POST.get("razorpay_signature", "")
+        order = Order.objects.get(provider_order_id=provider_order_id)
+        order.payment_id = payment_id
+        order.signature_id = signature_id
+        order.save()
+        if not verify_signature(request.POST):
+            order.status = PaymentStatus.SUCCESS
+            order.save()
+            return render(request, "callback.html", context={"status": order.status})  
+ 
+        else:
+            order.status = PaymentStatus.FAILURE
+            order.save()
+            return redirect("rentbook")
 
-# def view_cars(req,cid):
-#     if 'user' in req.session:
-#         data=Cars.objects.get(pk=cid)
-#         return render(req,'user/viewcars.html',{'data':data})
-#     else:
-#          return redirect(car_login)
+    else:
+        payment_id = json.loads(request.POST.get("error[metadata]")).get("payment_id")
+        provider_order_id = json.loads(request.POST.get("error[metadata]")).get(
+            "order_id"
+        )
+        order = Order.objects.get(provider_order_id=provider_order_id)
+        order.payment_id = payment_id
+        order.status = PaymentStatus.FAILURE
+        order.save()
+        return render(request, "callback.html", context={"status": order.status})  
+    
+def rentbook(req):
+    if 'user' in req.session:
+        user = User.objects.get(username=req.session['user'])
+        
+        # Fetch rented cars for the user
+        rented_cars = Rented.objects.filter(user=user)
 
+        if req.method == 'POST':
+            # Assuming you have a form to create a rented car
+            car_id = req.POST.get('car_id')  # Get the car ID from the form
+            booking_id = req.POST.get('booking_id')  # Get the booking ID from the form
+            total_price = req.POST.get('total_price')  # Get the total price from the form
 
+            # Fetch the car and booking instances
+            car = get_object_or_404(Cars, id=car_id)
+            booking = get_object_or_404(Booking, id=booking_id)
+
+            # Create the Rented instance
+            rented = Rented.objects.create(
+                buy=Buy.objects.create(booking=booking, car=car, user=user, profile=Profile.objects.filter(user=user).first(), tot_price=total_price),
+                booking=booking,
+                car=car,
+                user=user,
+                profile=Profile.objects.filter(user=user).first(),
+                tot_price=total_price
+            )
+            rented.save()
+
+            messages.success(req, "Car rented successfully!")
+            return redirect('rentbook')  # Redirect to the rentbook page to see the updated list
+
+        return render(req, 'user/rentbook.html', {'rented_cars': rented_cars})
+    else:
+        return redirect(car_login) 

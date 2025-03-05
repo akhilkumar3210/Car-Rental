@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% load static %}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rented Cars</title>
+    <style>
+        .card {
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            padding: 16px;
+            margin: 16px;
+            display: inline-block;
+            width: 300px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        .card img {
+            max-width: 100%;
+            border-radius: 8px;
+        }
+        .card h3 {
+            margin: 0;
+            font-size: 1.5em;
+        }
+        .card p {
+            margin: 8px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>Your Rented Cars</h1>
+    <div class="card-container">
+        {% for rented in rented_cars %}
+            <div class="card">
+                <img src="{{ rented.car.image.url }}" alt="{{ rented.car.model }}">
+                <h3>{{ rented.car.model }}</h3>
+                <p><strong>Make:</strong> {{ rented.car.make.makes }}</p>
+                <p><strong>Year:</strong> {{ rented.car.year }}</p>
+                <p><strong>Price per Day:</strong> ₹{{ rented.car.price_per_day }}</p>
+                <p><strong>Total Price:</strong> ₹{{ rented.tot_price }}</p>
+                <p><strong>Pickup Location:</strong> {{ rented.booking.pickup_location }}</p>
+                <p><strong>Pickup Date:</strong> {{ rented.booking.pickup_date }}</p>
+                <p><strong>Dropoff Date:</strong> {{ rented.booking.dropoff_date }}</p>
+            </div>
+        {% empty %}
+            <p>You have not rented any cars yet.</p>
+        {% endfor %}
+    </div>
+    <a href="user_home" class="btn btn-primary">back</a>
+</body>
+</html>

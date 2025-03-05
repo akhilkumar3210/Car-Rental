@@ -5,7 +5,24 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Checkout</title>
-    <link rel="stylesheet" href="{% static 'css/checkout.css' %}"> 
+    <link rel="stylesheet" href="{% static 'css/checkout.css' %}">
+    <script>
+        function updateTotal() {
+            const basePrice = {{ buy.tot_price }};  // Base price from the Buy instance
+            const coDriverFee = 500;  // Co-driver fee
+            const coDriverCheckbox = document.getElementById('co_driver_checkbox');
+            let total = basePrice;  // Start with the base price
+
+            // Add co-driver fee if the checkbox is checked
+            if (coDriverCheckbox.checked) {
+                total += coDriverFee;
+            }
+
+            // Update the total amount displayed
+            document.getElementById('total_amount').innerText = `₹${total}`;
+            document.getElementById('co_driver_amount').innerText = coDriverCheckbox.checked ? `+ ₹${coDriverFee}` : `₹0`;
+        }
+    </script>
 </head>
 <body>
     <h1>Checkout</h1>
@@ -25,9 +42,12 @@
     
         <h2>Booking Details</h2>
         <div>
-            {% for label, value in booking_details %}
-                <p><strong>{{ label }}:</strong> {{ value }}</p>
-            {% endfor %}
+            <p>Pickup Location: {{ booking.pickup_location }}</p>
+            <p>Pickup Date: {{ booking.pickup_date }}</p>
+            <p>Pickup Time: {{ booking.pickup_time }}</p>
+            <p>Dropoff Location: {{ booking.dropoff_location }}</p>
+            <p>Dropoff Date: {{ booking.dropoff_date }}</p>
+            <p>Dropoff Time: {{ booking.dropoff_time }}</p>
         </div>
     
         <h2>User Profile</h2>
@@ -41,18 +61,25 @@
         <h2>Co-Driver Option</h2>
         <div>
             <label for="co_driver_checkbox">
-                <input type="checkbox" id="co_driver_checkbox" name="co_driver" value="800">
-                Add Co-Driver for ₹800
+                <input type="checkbox" id="co_driver_checkbox" name="co_driver" value="500" onchange="updateTotal()">
+                Add Co-Driver for ₹500
             </label>
         </div>
     
         <div>
-            <h3>Total Amount Payable: ₹{{buy.tot_price}}</h3>
+            <h3>Base Price: <span id="base_price">₹{{ buy.tot_price }}</span></h3>
+            <h3>Co-Driver Fee: <span id="co_driver_amount">₹0</span></h3>
+            <h3>Total Amount Payable: <span id="total_amount">₹{{ buy.tot_price }}</span></h3>
         </div>
     
         <div>
             <button type="submit">Confirm</button>
         </div>
     </form>
+
+    <script>
+        // Initialize the total amount on page load
+        updateTotal();
+    </script>
 </body>
 </html>
