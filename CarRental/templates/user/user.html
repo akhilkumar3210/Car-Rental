@@ -27,10 +27,10 @@
                         <a class="nav-link" href="#">Home</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="#">About</a>
+                        <a class="nav-link" href="rentbook">Rented Cars</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="#">Add Profile</a>
+                        <a class="nav-link" href="addprofile">Add Profile</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="logout">Logout</a>
@@ -143,19 +143,19 @@
             <label class="toggle">
                 <span class="slider"></span>
             </label>
-    
+
             <div class="booking-section">
                 <div class="option">
                     <label for="pickup">Pick - Up</label>
                     <div class="details">
-                        <label>Locations</label>
-                        <select id="pickup-location" name="pickup-location">
-                            <option>Select your location in Ernakulam</option>
-                            <option>HMT Kalamassery</option>
-                            <option>Edapally</option>
-                            <option>High Court</option>
+                        <label for="pickup-location">Locations</label>
+                        <select id="pickup-location" name="pickup-location" required>
+                            <option value="" disabled selected>Select your location in Ernakulam</option>
+                            <option value="HMT Kalamassery">HMT Kalamassery</option>
+                            <option value="Edapally">Edapally</option>
+                            <option value="High Court">High Court</option>
                         </select>
-                        <label>Date</label>
+                        <label for="pickup-date">Date</label>
                         <input type="date" id="pickup-date" name="pickup-date" required>
                         <label>Time</label>
                         <div class="time-container">
@@ -168,20 +168,20 @@
                         </div>
                     </div>
                 </div>
-    
+
                 <div class="switch-icon">⇄</div>
-    
+
                 <div class="option">
                     <label for="dropoff">Drop - Off</label>
                     <div class="details">
-                        <label>Locations</label>
-                        <select id="dropoff-location" name="dropoff-location">
-                            <option>Select your location in Ernakulam</option>
-                            <option>HMT Kalamassery</option>
-                            <option>Edapally</option>
-                            <option>High Court</option>
+                        <label for="dropoff-location">Locations</label>
+                        <select id="dropoff-location" name="dropoff-location" required>
+                            <option value="" disabled selected>Select your location in Ernakulam</option>
+                            <option value="HMT Kalamassery">HMT Kalamassery</option>
+                            <option value="Edapally">Edapally</option>
+                            <option value="High Court">High Court</option>
                         </select>
-                        <label>Date</label>
+                        <label for="dropoff-date">Date</label>
                         <input type="date" id="dropoff-date" name="dropoff-date" required>
                         <label>Time</label>
                         <div class="time-container">
@@ -195,7 +195,7 @@
                     </div>
                 </div>
             </div>
-    
+
             <button type="submit" class="btn">Let's Drive</button>
         </form>
     </div>
