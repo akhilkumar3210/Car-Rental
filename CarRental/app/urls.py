@@ -16,6 +16,10 @@ urlpatterns=[
      path('edit/<id>',views.edit_cars),
      path('view_make/<id>',views.view_make),
      path('customerprofile',views.customerprofile),
+     path('locations',views.locations),
+     path('delete_locations/<id>',views.delete_locations),
+
+
 
 
 
@@ -29,7 +33,8 @@ urlpatterns=[
      path('checkout/<cid>/<booking_id>/<buy_id>', views.checkout, name='checkout'),
      path('rent_payment/<total_amount>',views.rent_payment,name="rent_payment"),
      path('callback',views.callback,name="callback"),
-     path('rentbook',views.rentbook,name="rentbook")
+     path('rentbook',views.rentbook,name="rentbook"),
+     # path('delete_car/<car_id>/',views.delete_car, name='delete_car'),
 
 
 

@@ -8,8 +8,15 @@ from django.utils.translation import gettext_lazy as _
 from .constants import PaymentStatus
 # Create your models here.
 
+
+
 class Makes(models.Model):
     makes=models.TextField()
+
+class Location(models.Model):
+    location=models.TextField()
+
+
 
 class Booking(models.Model):
     STATUS_CHOICES = [
@@ -57,6 +64,7 @@ class Cars(models.Model):
     price_per_day = models.IntegerField()
     description = models.TextField()
     image = models.FileField()
+    is_available = models.BooleanField(default=True)
 
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
@@ -70,7 +78,7 @@ class Profile(models.Model):
 
 class Buy(models.Model):
     booking=models.ForeignKey(Booking,on_delete=models.CASCADE)
-    car =models.ForeignKey(Cars,on_delete=models.CASCADE)
+    # car =models.ForeignKey(Cars,on_delete=models.CASCADE)
     user=models.ForeignKey(User,on_delete=models.CASCADE)
     profile=models.ForeignKey(Profile,on_delete=models.CASCADE)
     tot_price=models.IntegerField()
@@ -79,7 +87,7 @@ class Buy(models.Model):
 class Rented(models.Model):
     buy=models.ForeignKey(Buy,on_delete=models.CASCADE)
     booking=models.ForeignKey(Booking,on_delete=models.CASCADE)
-    car =models.ForeignKey(Cars,on_delete=models.CASCADE)
+    # car =models.ForeignKey(Cars,on_delete=models.CASCADE)
     user=models.ForeignKey(User,on_delete=models.CASCADE)
     profile=models.ForeignKey(Profile,on_delete=models.CASCADE)
     tot_price=models.IntegerField()

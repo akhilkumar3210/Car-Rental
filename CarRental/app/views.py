@@ -134,6 +134,7 @@ def addcars(req):
         price_per_day = req.POST.get('price_per_day')
         description = req.POST.get('description')
         image = req.FILES.get('image')
+        is_available = req.POST.get('is_available') == 'on' 
 
         try:
             if not car_id or not model or not year or not mileage or not price_per_day or not image:
@@ -153,7 +154,8 @@ def addcars(req):
                 mileage=mileage,
                 price_per_day=price_per_day,
                 description=description,
-                image=image
+                image=image,
+                is_available=is_available
             )
             return redirect(shop_home)
 
@@ -164,6 +166,24 @@ def addcars(req):
     else:
         data = Makes.objects.all()
         return render(req, 'shop/addcars.html', {'data': data})
+    
+def locations(req):
+    if 'shop' in req.session:
+                if req.method == 'POST':
+                        location=req.POST['location']
+                        data=Location.objects.create(location=location)
+                        data.save()
+                        return redirect(locations)
+                else:
+                        data=Location.objects.all()
+                        return render(req,'shop/location.html',{'data':data})
+    else:
+             redirect(car_login)
+
+def delete_locations(req,id):
+     data=Location.objects.get(pk=id)
+     data.delete()
+     return redirect(locations)
     
 def customerprofile(req):
      data=Profile.objects.all()
@@ -290,8 +310,8 @@ def user_home(req):
                 messages.error(req, f"Error saving booking: {e}")
                 return render(req, 'user/user.html')
 
-        # If the request method is GET, you can pre-fill the form with session data if needed
-        return render(req, 'user/user.html')
+        data=Location.objects.all()
+        return render(req, 'user/user.html',{'data':data})
     else:
         return redirect(car_login)
     
@@ -457,6 +477,8 @@ def checkout(req, cid, booking_id, buy_id):
     booking = get_object_or_404(Booking, pk=booking_id, user=user)
     car = get_object_or_404(Cars, pk=cid)
     buy = get_object_or_404(Buy, pk=buy_id)
+    req.session['cars']=car.pk
+    
 
     # Retrieve the user's profile
     profile = Profile.objects.filter(user=user).first()
@@ -497,7 +519,7 @@ def checkout(req, cid, booking_id, buy_id):
         # Redirect to the rent_payment view with the total amount
         return redirect('rent_payment', total_amount=total_cost)  # Redirect to rent_payment view
 
-    # Render the checkout template with the calculated totals
+   
     return render(req, 'user/checkout.html', {
         'booking': booking,
         'car': car,
@@ -557,7 +579,7 @@ def callback(request):
         else:
             order.status = PaymentStatus.FAILURE
             order.save()
-            return redirect("rentbook")
+            return redirect("rentbook",)
 
     else:
         payment_id = json.loads(request.POST.get("error[metadata]")).get("payment_id")
@@ -570,14 +592,20 @@ def callback(request):
         order.save()
         return render(request, "callback.html", context={"status": order.status})  
     
-def rentbook(req):
+def rent_car(req, car_id):
     if 'user' in req.session:
         user = User.objects.get(username=req.session['user'])
-        
-        # Fetch rented cars for the user
-        rented_cars = Rented.objects.filter(user=user)
+        car = Cars.objects.get(id=car_id)
 
-
-        return render(req, 'user/rentbook.html', {'rented_cars': rented_cars})
+        if car.is_available:
+            # Create rental record
+            Rented.objects.create(user=user, car=car)
+            # Set car as not available
+            car.is_available = False
+            car.save()
+            return redirect('rental_success')
+        else:
+            return HttpResponse("This car is not available for rent.")
     else:
         return redirect(car_login)
+    

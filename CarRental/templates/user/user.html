@@ -151,9 +151,9 @@
                         <label for="pickup-location">Locations</label>
                         <select id="pickup-location" name="pickup-location" required>
                             <option value="" disabled selected>Select your location in Ernakulam</option>
-                            <option value="HMT Kalamassery">HMT Kalamassery</option>
-                            <option value="Edapally">Edapally</option>
-                            <option value="High Court">High Court</option>
+                            {% for i in data %}
+                            <option value="{{i.location}}">{{i.location}}</option>
+                            {% endfor %} 
                         </select>
                         <label for="pickup-date">Date</label>
                         <input type="date" id="pickup-date" name="pickup-date" required>
@@ -177,9 +177,9 @@
                         <label for="dropoff-location">Locations</label>
                         <select id="dropoff-location" name="dropoff-location" required>
                             <option value="" disabled selected>Select your location in Ernakulam</option>
-                            <option value="HMT Kalamassery">HMT Kalamassery</option>
-                            <option value="Edapally">Edapally</option>
-                            <option value="High Court">High Court</option>
+                            {% for i in data %}
+                            <option value="{{i.location}}">{{i.location}}</option>
+                            {% endfor %} 
                         </select>
                         <label for="dropoff-date">Date</label>
                         <input type="date" id="dropoff-date" name="dropoff-date" required>
