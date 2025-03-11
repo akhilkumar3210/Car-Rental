@@ -9,7 +9,40 @@
     <link rel="stylesheet" href="{% static 'css/customer.css' %}">
 </head>
 <body>
-    <!-- Profile Card Section -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-light fixed-top">
+        <div class="container">
+            <a class="navbar-brand" href="#"><img src="{% static 'images/logo-car.png' %}" alt="" class="logo-img"></a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="user_home">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="locations">Add Locations</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="addcars">Add Cars</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="makes">Makes</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">Customer Profile</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="rentedcars">Rented Cars</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="logout">Logout</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
 <div class="profile-card">
     <div class="card-header">
         <h3>Profile Information</h3>
@@ -18,30 +51,46 @@
         {% for i in data %}
         <div class="profile-info">
             <div class="info-item">
-                <strong>Name:</strong> <span id="display-name">{{i.name}}</span>
+                <strong>Name:</strong> <span id="display-name">{{ i.name }}</span>
             </div>
-            <div class="info-item">
-                <strong>Email:</strong> <span id="display-email">{{i.email}}</span>
-            </div>
-            <div class="info-item">
-                <strong>Phone Number:</strong> <span id="display-phone">{{i.phone_number}}</span>
-            </div>
-            <div class="info-item">
-                <strong>Date of Birth:</strong> <span id="display-dob">{{i.date_of_birth}}</span>
-            </div>
-        </div>
-        <div class="license-info">
-            <h4>Driving License</h4>
-            <div class="license-item">
-                <strong>Front Side:</strong> <span id="display-license-front"><img src="{{i.driving_license_front.url}}" alt="" width="400px" height="220px"></span>
-            </div>
-            <div class="license-item">
-                <strong>Back Side:</strong> <span id="display-license-back"><img src="{{i.driving_license_back.url}}" alt="" width="400px" height="220px"></span>
+            <button class="btn-show-more" onclick="toggleDetails(this)">Show More</button>
+            <div class="additional-info" style="display: none;">
+                <div class="info-item">
+                    <strong>Email:</strong> <span id="display-email">{{ i.email }}</span>
+                </div>
+                <div class="info-item">
+                    <strong>Phone Number:</strong> <span id="display-phone">{{ i.phone_number }}</span>
+                </div>
+                <div class="info-item">
+                    <strong>Date of Birth:</strong> <span id="display-dob">{{ i.date_of_birth }}</span>
+                </div>
+                <div class="license-info">
+                    <h4>Driving License</h4>
+                    <div class="license-item">
+                        <strong>Front Side:</strong> <span id="display-license-front"><img src="{{ i.driving_license_front.url }}" alt="" width="400px" height="220px"></span>
+                    </div>
+                    <div class="license-item">
+                        <strong>Back Side:</strong> <span id="display-license-back"><img src="{{ i.driving_license_back.url }}" alt="" width="400px" height="220px"></span>
+                    </div>
+                </div>
             </div>
         </div>
         {% endfor %}
     </div>
-
 </div>
+
+
+<script>
+    function toggleDetails(button) {
+        const additionalInfo = button.nextElementSibling;
+        if (additionalInfo.style.display === "none") {
+            additionalInfo.style.display = "block";
+            button.textContent = "Show Less";
+        } else {
+            additionalInfo.style.display = "none";
+            button.textContent = "Show More";
+        }
+    }
+</script>
 </body>
 </html>

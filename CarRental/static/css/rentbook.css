@@ -18,3 +18,66 @@
 .card p {
     margin: 8px 0;
 }
+
+.msg{
+    text-align: center;
+    width: 20%;
+    margin: auto;
+    margin-top: -110px;
+  }
+
+  .navbar {
+    position:relative ;
+    margin-bottom: 10vh;
+}
+
+.nav-link {
+    position: relative;
+    color: #333;
+    transition: color 0.3s ease;
+}
+
+.nav-link::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    bottom: 0;
+    width: 0;
+    height: 2px;
+    background: #007bff; 
+    transition: width 0.3s ease, left 0.3s ease;
+}
+
+.nav-link:hover {
+    color: #007bff; 
+}
+.dropdown-toggle {
+    background-color: #ffffff;
+    border: 1px solid #ced4da;
+    border-radius: 0.25rem;
+    padding: 0.375rem 0.75rem;
+}
+
+.dropdown-menu {
+    background-color: #ffffff;
+    border: 1px solid #ced4da;
+}
+
+.dropdown-item {
+    color: #333;
+}
+
+.dropdown-item:hover {
+    background-color: #f1f1f1;
+    color: #007bff;
+}
+
+.nav-link:hover::after {
+    width: 100%;
+    left: 0;
+}
+
+.logo-img {
+    width: 300px; 
+    height:100px; 
+}

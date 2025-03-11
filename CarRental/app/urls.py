@@ -18,6 +18,7 @@ urlpatterns=[
      path('customerprofile',views.customerprofile),
      path('locations',views.locations),
      path('delete_locations/<id>',views.delete_locations),
+     path('rentedcars',views.rentedcars),
 
 
 

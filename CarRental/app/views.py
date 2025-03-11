@@ -231,17 +231,22 @@ def edit_cars(req,id):
         price_per_day=req.POST['price_per_day']
         description=req.POST['description']
         image=req.FILES.get('image')
+        is_available = req.POST.get('is_available') == 'on' 
         if image:
-            Cars.objects.filter(pk=id).update(model= model,year=year,bodytype=body_type, fuel= fuel,transmission=transmission, mileage= mileage,price_per_day=price_per_day,description=description)
+            Cars.objects.filter(pk=id).update(model= model,year=year,bodytype=body_type, fuel= fuel,transmission=transmission, mileage= mileage,price_per_day=price_per_day,description=description,is_available= is_available)
             data=Cars.objects.get(pk=id)
             data.image=image
             data.save()
         else:
-            Cars.objects.filter(pk=id).update(model= model,year=year,bodytype=body_type, fuel= fuel,transmission=transmission, mileage= mileage,price_per_day=price_per_day,description=description)
+            Cars.objects.filter(pk=id).update(model= model,year=year,bodytype=body_type, fuel= fuel,transmission=transmission, mileage= mileage,price_per_day=price_per_day,description=description,is_available= is_available)
         return redirect(shop_home)
     else:
         car=Cars.objects.get(pk=id)      
         return render(req,'shop/edit.html',{'car':car})
+    
+def rentedcars(req):
+     rented = Rented.objects.all()
+     return render(req,'shop/rentedcars.html',{'data':rented})
 # ___________________________________________________________________________ADMIN_________________________________________________________________________________________
 
 def user_home(req):
@@ -505,17 +510,17 @@ def checkout(req, cid, booking_id, buy_id):
             total_cost = total_without_co_driver
             messages.info(req, "Co-driver option not selected. Total cost remains at ₹{:.2f}".format(total_cost))
 
-        # Create the Rented instance
-        rented = Rented.objects.create(
-            buy=buy,
+        if car.is_available:
+            rented = Rented.objects.create( buy=buy,
             booking=booking,
             car=car,
             user=user,
             profile=profile,
-            tot_price=total_cost
-        )
-        rented.save()
-        
+            tot_price=total_cost)
+            rented.save()
+            # Set car as not available
+            car.is_available = False
+            car.save()
         # Redirect to the rent_payment view with the total amount
         return redirect('rent_payment', total_amount=total_cost)  # Redirect to rent_payment view
 
@@ -528,6 +533,7 @@ def checkout(req, cid, booking_id, buy_id):
         'total_with_co_driver': total_with_co_driver,
         'buy': buy
     })
+
 def profile_success(request):
     return render(request, 'user/profile_success.html')
 
@@ -579,7 +585,8 @@ def callback(request):
         else:
             order.status = PaymentStatus.FAILURE
             order.save()
-            return redirect("rentbook",)
+            
+        return redirect("rentbook")
 
     else:
         payment_id = json.loads(request.POST.get("error[metadata]")).get("payment_id")
@@ -592,20 +599,16 @@ def callback(request):
         order.save()
         return render(request, "callback.html", context={"status": order.status})  
     
-def rent_car(req, car_id):
-    if 'user' in req.session:
-        user = User.objects.get(username=req.session['user'])
-        car = Cars.objects.get(id=car_id)
 
-        if car.is_available:
-            # Create rental record
-            Rented.objects.create(user=user, car=car)
-            # Set car as not available
-            car.is_available = False
-            car.save()
-            return redirect('rental_success')
-        else:
-            return HttpResponse("This car is not available for rent.")
+def rentbook(req):
+    if 'user' in req.session:
+        try:
+            user = User.objects.get(username=req.session['user'])
+            rented = Rented.objects.filter(user=user)  # Filter rented cars by the current user
+            return render(req, 'user/rentbook.html', {'data': rented})
+        except ObjectDoesNotExist:
+            # Handle the case where the user or car does not exist
+            return render(req, 'user/rentbook.html', {'error': 'User  or car not found.'})
     else:
         return redirect(car_login)
     

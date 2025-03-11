@@ -78,7 +78,7 @@ class Profile(models.Model):
 
 class Buy(models.Model):
     booking=models.ForeignKey(Booking,on_delete=models.CASCADE)
-    # car =models.ForeignKey(Cars,on_delete=models.CASCADE)
+    car =models.ForeignKey(Cars,on_delete=models.CASCADE)
     user=models.ForeignKey(User,on_delete=models.CASCADE)
     profile=models.ForeignKey(Profile,on_delete=models.CASCADE)
     tot_price=models.IntegerField()
@@ -87,10 +87,15 @@ class Buy(models.Model):
 class Rented(models.Model):
     buy=models.ForeignKey(Buy,on_delete=models.CASCADE)
     booking=models.ForeignKey(Booking,on_delete=models.CASCADE)
-    # car =models.ForeignKey(Cars,on_delete=models.CASCADE)
+    car =models.ForeignKey(Cars,on_delete=models.CASCADE)
     user=models.ForeignKey(User,on_delete=models.CASCADE)
     profile=models.ForeignKey(Profile,on_delete=models.CASCADE)
     tot_price=models.IntegerField()
+
+    def delete(self, *args, **kwargs):
+        self.car.is_available = True
+        self.car.save()
+        super().delete(*args, **kwargs)
 
     
 
