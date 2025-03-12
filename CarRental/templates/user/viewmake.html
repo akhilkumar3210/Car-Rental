@@ -21,11 +21,14 @@
                     <li class="nav-item">
                         <a class="nav-link" href="../user_home">Home</a>
                     </li>
-                    <li class="nav-item">
+                    <!-- <li class="nav-item">
                         <a class="nav-link" href="addcars">Add Cars</a>
-                    </li>
-                    <li class="nav-item">
+                    </li> -->
+                    <!-- <li class="nav-item">
                         <a class="nav-link" href="makes">Makes</a>
+                    </li> -->
+                    <li class="nav-item">
+                        <a class="nav-link" href="../../available_car/{{pk.id}}">Available Cars</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="logout">Logout</a>
@@ -52,8 +55,8 @@
                         <p class="card-text"><strong>Price:</strong> ₹{{i.price_per_day}}/D</p>
                         <p class="card-text">{{i.description}}</p>
                         <div class="button-group">
-                            <a href="edit/{{i.pk}}" class="btn btn-primary">Edit</a>
-                            <a href="delete/{{i.pk}}" class="btn btn-danger">Delete</a>
+                            <a href="../BookNow/{{i.pk}}/{{i.pk}}" class="btn btn-primary">Booknow</a>
+                            <!-- <a href="delete/{{i.pk}}" class="btn btn-danger">Delete</a> -->
                         </div>
                     </div>
                     <div class="card-footer text-muted">

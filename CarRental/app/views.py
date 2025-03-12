@@ -390,7 +390,7 @@ def addprofile(req):
                         if not is_valid_file(driving_license_front) or not is_valid_file(driving_license_back):
                             return HttpResponse("Invalid file format. Allowed formats: jpg, jpeg, png, pdf.", status=400)
 
-                        profile = Profile.objects.create(
+                        profile = Profile.objects.create(   
                             user=user,
                             name=name,
                             email=email,
